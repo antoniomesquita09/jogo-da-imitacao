@@ -32,7 +32,6 @@ function manda_resposta(msg)
             function(client) print("mandou resposta da jogada") end)
 end
 
-
 -- quando recebe jogada inimiga
 function opponent_play(message)
   print("queue response da play")
@@ -71,7 +70,7 @@ function love.update(dt)
   mqtt_client:handler()
 end
 
-function love.draw ()
+function love.draw()
   -- desenhar tabuleiro
 end
 

@@ -22,6 +22,8 @@ frequency_mapper = {100, 200, 300, 400}
 local meuid = node_settings.id
 local m = mqtt.Client(meuid, 120)
 
+sequency_length = 1
+
 function publica(c,chave)
   c:publish(node_settings.publish,chave,0,0, 
             function(client) print("mandou! "..chave) end)
@@ -43,38 +45,90 @@ function novaInscricao(c)
   c:on("message", novamsg)
 end
 
+function nodeSubscription(c)
+  local msgsrec = 0
+  function novamsg(c, t, m)
+    print ("mensagem ".. msgsrec .. ", topico: ".. t .. ", dados: " .. m)
+
+    payload = json.decode(m)
+    for _, value in pairs(payload['sequence']) do
+      frequency = frequency_mapper[value]
+      -- disparar buzzer do nodemcu com a frequency 
+    end
+
+    msgsrec = msgsrec + 1
+  end
+  c:on("message", novamsg)
+end
+
+function responseSubscription(c)
+  local msgsrec = 0
+  function novamsg(c, t, m)
+    print ("mensagem ".. msgsrec .. ", topico: ".. t .. ", dados: " .. m)
+
+    payload = json.decode(m)
+
+    if payload['status'] == 'RIGHT' then
+      -- turn on green light
+    elseif payload['status'] == 'WRONG' then
+      -- turn on red light
+    else
+      print("UNKNOWN response status")
+    end
+
+    msgsrec = msgsrec + 1
+  end
+  c:on("message", novamsg)
+end
+
 function conectado(client)
 
-  client:subscribe(node_settings.subscribe, 0, novaInscricao)
-  client:subscribe(love_settings.response_queue, 0, novaInscricao)
+  client:subscribe(node_settings.subscribe, 0, nodeSubscription)
+  client:subscribe(love_settings.response_queue, 0, responseSubscription)
+
+  payload = {
+    'sequence': {}
+  }
 
   gpio.trig(sw1, "down", 
     function (level,timestamp)
         if timestamp - last < delay then return end
         last = timestamp
-        chave = 1
-        publica(client,chave)
+        table.insert(payload['sequence'], 1)
+        if #payload['sequence'] > sequency_length then -- caso a sequencia da play seja 1 maior q a atual, então publica a play
+          publica(client,payload)
+          sequency_length = #payload['sequence'] + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
+        end
     end)
   gpio.trig(sw2, "down", 
     function (level,timestamp)
         if timestamp - last < delay then return end
         last = timestamp
-        chave = 2
-        publica(client,chave)
+        table.insert(payload['sequence'], 2)
+        if #payload['sequence'] > sequency_length then -- caso a sequencia da play seja 1 maior q a atual, então publica a play
+          publica(client,payload)
+          sequency_length = #payload['sequence'] + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
+        end
     end)
   gpio.trig(sw3, "down", 
     function (level,timestamp)
         if timestamp - last < delay then return end
         last = timestamp
-        chave = 3
-        publica(client,chave)
+        table.insert(payload['sequence'], 3)
+        if #payload['sequence'] > sequency_length then -- caso a sequencia da play seja 1 maior q a atual, então publica a play
+          publica(client,payload)
+          sequency_length = #payload['sequence'] + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
+        end
     end)
   gpio.trig(sw4, "down", 
     function (level,timestamp)
         if timestamp - last < delay then return end
         last = timestamp
-        chave = 3
-        publica(client,chave)
+        table.insert(payload['sequence'], 4)
+        if #payload['sequence'] > sequency_length then -- caso a sequencia da play seja 1 maior q a atual, então publica a play
+          publica(client,payload)
+          sequency_length = #payload['sequence'] + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
+        end
     end)
 end 
 
