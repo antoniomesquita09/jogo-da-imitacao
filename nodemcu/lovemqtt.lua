@@ -9,7 +9,7 @@ local last = 0
 local sw1 = 3
 local sw2 = 4
 local sw3 = 5
-local sw4 = 6
+local sw4 = 2
 local sw7 = 7
 gpio.mode(sw1,gpio.INT,gpio.PULLUP)
 gpio.mode(sw2,gpio.INT,gpio.PULLUP)
@@ -17,6 +17,7 @@ gpio.mode(sw3,gpio.INT,gpio.PULLUP)
 gpio.mode(sw4,gpio.INT,gpio.PULLUP)
 gpio.mode(sw7,gpio.INT,gpio.PULLUP)
 
+frequency_mapper = {100, 200, 300, 400}
 
 local meuid = node_settings.id
 local m = mqtt.Client(meuid, 120)
@@ -26,18 +27,27 @@ function publica(c,chave)
             function(client) print("mandou! "..chave) end)
 end
 
-function novaInscricao (c)
+function novaInscricao(c)
   local msgsrec = 0
-  function novamsg (c, t, m)
+  function novamsg(c, t, m)
     print ("mensagem ".. msgsrec .. ", topico: ".. t .. ", dados: " .. m)
+
+    data = json.decode(m)
+    for _, value in pairs(data.sequence) do
+      frequency = frequency_mapper[value]
+      -- disparar buzzer do nodemcu com a frequency 
+    end
+
     msgsrec = msgsrec + 1
   end
   c:on("message", novamsg)
 end
 
-function conectado (client)
+function conectado(client)
+
   client:subscribe(node_settings.subscribe, 0, novaInscricao)
   client:subscribe(love_settings.response_queue, 0, novaInscricao)
+
   gpio.trig(sw1, "down", 
     function (level,timestamp)
         if timestamp - last < delay then return end
