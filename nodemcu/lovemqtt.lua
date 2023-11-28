@@ -29,22 +29,6 @@ function publica(c,chave)
             function(client) print("mandou! "..chave) end)
 end
 
-function novaInscricao(c)
-  local msgsrec = 0
-  function novamsg(c, t, m)
-    print ("mensagem ".. msgsrec .. ", topico: ".. t .. ", dados: " .. m)
-
-    data = json.decode(m)
-    for _, value in pairs(data.sequence) do
-      frequency = frequency_mapper[value]
-      -- disparar buzzer do nodemcu com a frequency 
-    end
-
-    msgsrec = msgsrec + 1
-  end
-  c:on("message", novamsg)
-end
-
 function nodeSubscription(c)
   local msgsrec = 0
   function novamsg(c, t, m)
