@@ -45,7 +45,6 @@ end
 
 
 function nodemcu_keyboard(node_message)
-  -- não tá na sua vez = não faz nada
   print("queue node mcu keyboard message")
 end
 
