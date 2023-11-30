@@ -11,6 +11,18 @@ function love.load ()
   io.stdout:setvbuf("no")
   
   -- requiring files
+  require('lua/screen')
+
+  -- screen startup
+  screen_size = 1000
+  love.window.setMode(screen_size,screen_size)
+  love.window.setTitle("Jogo da Imitação")
+  love.graphics.setBackgroundColor(0.5,0.5,0.5)
+
+  screen = createScreen(screen_size, screen_size)
+  
+  -- exemplo de sequência sendo desenhada
+  screen:draw_sequence({1,3,2,2,4,1})
 
   -- conexão mqtt
   mqtt_client = mqtt.client.create(settings.internet.server, settings.internet.port, mqttcb)
@@ -67,11 +79,13 @@ end
 
 function love.update(dt)
   -- tem que chamar o handler aqui!
+  screen:update(dt)
   mqtt_client:handler()
 end
 
 function love.draw()
-  -- desenhar tabuleiro
+  -- desenhar tela
+  screen:draw()
 end
 
 function love.quit()

@@ -68,7 +68,7 @@ function responseSubscription(c)
 end
 
 payload = {
-  'sequence': {}
+  sequence = {}
 }
 
 function conectado(client)
