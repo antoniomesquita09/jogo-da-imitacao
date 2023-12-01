@@ -9,24 +9,24 @@ local last = 0
 local sw1 = 3
 local sw2 = 4
 local sw3 = 5
-local sw4 = 2
-local sw7 = 7
+local sw4 = 6
+
 gpio.mode(sw1,gpio.INT,gpio.PULLUP)
 gpio.mode(sw2,gpio.INT,gpio.PULLUP)
 gpio.mode(sw3,gpio.INT,gpio.PULLUP)
 gpio.mode(sw4,gpio.INT,gpio.PULLUP)
-gpio.mode(sw7,gpio.INT,gpio.PULLUP)
 
 frequency_mapper = {100, 200, 300, 400}
 
 local meuid = node_settings.id
 local m = mqtt.Client(meuid, 120)
 
-sequency_length = 1
+sequency_length = 3
 play_success = 'SUCCESS'
 play_failure = 'FAILURE'
+sequence = ""
 
-function publica(c,chave)
+function publish(c,chave)
   c:publish(node_settings.publish,chave,0,0, 
             function(client) print("mandou! "..chave) end)
 end
@@ -52,8 +52,6 @@ function responseSubscription(c)
   function novamsg(c, t, m)
     print ("mensagem ".. msgsrec .. ", topico: ".. t .. ", dados: " .. m)
 
-    response = json.decode(m)
-
     if response.status == play_success then
       -- turn on green light
     elseif response.status == play_failure then
@@ -67,12 +65,7 @@ function responseSubscription(c)
   c:on("message", novamsg)
 end
 
-payload = {
-  sequence = {}
-}
-
 function conectado(client)
-
   client:subscribe(node_settings.subscribe, 0, nodeSubscription)
   client:subscribe(love_settings.response_queue, 0, responseSubscription)
 
@@ -80,40 +73,48 @@ function conectado(client)
     function (level,timestamp)
         if timestamp - last < delay then return end
         last = timestamp
-        table.insert(payload.sequence, 1)
-        if #payload.sequence > sequency_length then -- caso a sequencia da play seja 1 maior q a atual, então publica a play
-          publica(client,payload)
-          sequency_length = #payload.sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
+        sequence = sequence .. "1"
+        print(sequence)
+        if #sequence > sequency_length then
+          publish(client,sequence)
+          sequency_length = #sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
+          sequence = ""
         end
     end)
   gpio.trig(sw2, "down", 
     function (level,timestamp)
         if timestamp - last < delay then return end
         last = timestamp
-        table.insert(payload.sequence, 2)
-        if #payload.sequence > sequency_length then -- caso a sequencia da play seja 1 maior q a atual, então publica a play
-          publica(client,payload)
-          sequency_length = #payload.sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
+        sequence = sequence .. "2"
+        print(sequence)
+        if #sequence > sequency_length then
+          publish(client,sequence)
+          sequency_length = #sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
+          sequence = ""
         end
     end)
   gpio.trig(sw3, "down", 
     function (level,timestamp)
         if timestamp - last < delay then return end
         last = timestamp
-        table.insert(payload.sequence, 3)
-        if #payload.sequence > sequency_length then -- caso a sequencia da play seja 1 maior q a atual, então publica a play
-          publica(client,payload)
-          sequency_length = #payload.sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
+        sequence = sequence .. "3"
+        print(sequence)
+        if #sequence > sequency_length then
+          publish(client,sequence)
+          sequency_length = #sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
+          sequence = ""
         end
     end)
   gpio.trig(sw4, "down", 
     function (level,timestamp)
         if timestamp - last < delay then return end
         last = timestamp
-        table.insert(payload.sequence, 4)
-        if #payload.sequence > sequency_length then -- caso a sequencia da play seja 1 maior q a atual, então publica a play
-          publica(client,payload)
-          sequency_length = #payload.sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
+        sequence = sequence .. "4"
+        print(sequence)
+        if #sequence > sequency_length then
+          publish(client,sequence)
+          sequency_length = #sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
+          sequence = ""
         end
     end)
 end 

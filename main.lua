@@ -52,6 +52,7 @@ end
 -- processa a resposta de uma play, se acertou ou não
 function check_play(message)
   print("queue response check play message")
+  print(message)
 end
 
 
