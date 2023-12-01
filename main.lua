@@ -22,7 +22,7 @@ function love.load ()
   screen = createScreen(screen_size, screen_size)
   
   -- exemplo de sequência sendo desenhada
-  screen:draw_sequence({1,3,2,2,4,1})
+  -- screen:draw_sequence({1,3,2,2,4,1})
 
   -- conexão mqtt
   mqtt_client = mqtt.client.create(settings.internet.server, settings.internet.port, mqttcb)
@@ -57,7 +57,12 @@ end
 
 
 function nodemcu_keyboard(node_message)
-  print("queue node mcu keyboard message")
+  print("sequence received from nodemcu " .. node_message)
+
+  local sequence = {}
+  node_message:gsub(".",function(character) table.insert(sequence, tonumber(character)) end)
+
+  screen:draw_sequence(sequence)
 end
 
 -- recebe mensagens mqtt

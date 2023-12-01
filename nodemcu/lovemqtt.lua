@@ -9,7 +9,7 @@ local last = 0
 local sw1 = 3
 local sw2 = 4
 local sw3 = 5
-local sw4 = 6
+local sw4 = 8
 
 gpio.mode(sw1,gpio.INT,gpio.PULLUP)
 gpio.mode(sw2,gpio.INT,gpio.PULLUP)
@@ -21,7 +21,7 @@ frequency_mapper = {100, 200, 300, 400}
 local meuid = node_settings.id
 local m = mqtt.Client(meuid, 120)
 
-sequency_length = 3
+sequency_length = 1
 play_success = 'SUCCESS'
 play_failure = 'FAILURE'
 sequence = ""
@@ -75,7 +75,7 @@ function conectado(client)
         last = timestamp
         sequence = sequence .. "1"
         print(sequence)
-        if #sequence > sequency_length then
+        if #sequence == sequency_length then
           publish(client,sequence)
           sequency_length = #sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
           sequence = ""
@@ -87,7 +87,7 @@ function conectado(client)
         last = timestamp
         sequence = sequence .. "2"
         print(sequence)
-        if #sequence > sequency_length then
+        if #sequence == sequency_length then
           publish(client,sequence)
           sequency_length = #sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
           sequence = ""
@@ -99,7 +99,7 @@ function conectado(client)
         last = timestamp
         sequence = sequence .. "3"
         print(sequence)
-        if #sequence > sequency_length then
+        if #sequence == sequency_length then
           publish(client,sequence)
           sequency_length = #sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
           sequence = ""
@@ -111,7 +111,7 @@ function conectado(client)
         last = timestamp
         sequence = sequence .. "4"
         print(sequence)
-        if #sequence > sequency_length then
+        if #sequence == sequency_length then
           publish(client,sequence)
           sequency_length = #sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
           sequence = ""
