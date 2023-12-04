@@ -10,6 +10,8 @@ function createScreen(width, height)
       -- um botão é iluminado de cada vez
       drawing_queue={},
 
+      correct_sequence={},
+
       -- botão do node apertado (ilumina quadrado apertado)
       -- botão = número de 1 a 4 (equivalente a botão apertado)
       -- botões ficam desenhados por 1 segundo
@@ -36,6 +38,22 @@ function createScreen(width, height)
             table.insert(self.drawing_queue,button_dict)
             table.insert(self.drawing_queue,rest_dict)
         end
+      end,
+
+      check_sequence = function(self, sequence)
+        if #self.correct_sequence == 0 then
+          table.insert(self.correct_sequence, sequence[1])
+          return
+        end
+
+        next_btn = table.remove(sequence, #self.correct_sequence + 1)
+        for i,attempt in ipairs(sequence) do
+          if attempt ~= self.correct_sequence[i] then
+            print("[ERROR] Received: " .. attempt .. " on index " .. i .. " and expected " .. self.correct_sequence[i])
+          end
+        end
+        
+        table.insert(self.correct_sequence, next_btn)
       end,
 
       update = function(self, dt)

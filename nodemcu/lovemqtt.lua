@@ -34,13 +34,12 @@ end
 function nodeSubscription(c)
   local msgsrec = 0
   function novamsg(c, t, m)
-    print ("mensagem ".. msgsrec .. ", topico: ".. t .. ", dados: " .. m)
+    print ("mensagem node ".. msgsrec .. ", topico: ".. t .. ", dados: " .. m)
 
-    node_responses = json.decode(m)
-    for _, value in pairs(node_responses.sequence) do
-      frequency = frequency_mapper[value]
-      -- disparar buzzer do nodemcu com a frequency 
-    end
+    -- for _, value in pairs(node_response.sequence) do
+    --   frequency = frequency_mapper[value]
+    --   -- disparar buzzer do nodemcu com a frequency 
+    -- end
 
     msgsrec = msgsrec + 1
   end
@@ -50,11 +49,12 @@ end
 function responseSubscription(c)
   local msgsrec = 0
   function novamsg(c, t, m)
-    print ("mensagem ".. msgsrec .. ", topico: ".. t .. ", dados: " .. m)
+    print ("mensagem response ".. msgsrec .. ", topico: ".. t .. ", dados: " .. m)
 
-    if response.status == play_success then
+    if m == play_success then
       -- turn on green light
-    elseif response.status == play_failure then
+      print()
+    elseif m == play_failure then
       -- turn on red light
     else
       print("UNKNOWN response status")

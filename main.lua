@@ -63,6 +63,10 @@ function nodemcu_keyboard(node_message)
   node_message:gsub(".",function(character) table.insert(sequence, tonumber(character)) end)
 
   screen:draw_sequence(sequence)
+
+  screen:check_sequence(sequence)
+
+  manda_resposta("SUCCESS")
 end
 
 -- recebe mensagens mqtt
