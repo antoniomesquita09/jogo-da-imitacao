@@ -10,13 +10,28 @@ local sw1 = 3
 local sw2 = 4
 local sw3 = 5
 local sw4 = 8
+local tones = {100,200,300,400}
+
+buzzerPin = 7
+gpio.mode(buzzerPin, gpio.OUTPUT)
+
+function beep(pin, tone, duration)
+    local freq = tone
+    print ("Frequency:" .. freq)
+    pwm.setup(pin, freq, 512)
+    pwm.start(pin)
+    -- delay in uSeconds
+    tmr.delay(duration * 1000)
+    pwm.stop(pin)
+    --20ms pause
+    tmr.wdclr()
+    tmr.delay(20000)
+end
 
 gpio.mode(sw1,gpio.INT,gpio.PULLUP)
 gpio.mode(sw2,gpio.INT,gpio.PULLUP)
 gpio.mode(sw3,gpio.INT,gpio.PULLUP)
 gpio.mode(sw4,gpio.INT,gpio.PULLUP)
-
-frequency_mapper = {100, 200, 300, 400}
 
 local meuid = node_settings.id
 local m = mqtt.Client(meuid, 120)
@@ -73,6 +88,7 @@ function conectado(client)
     function (level,timestamp)
         if timestamp - last < delay then return end
         last = timestamp
+        beep(buzzerPin, 100, 100)
         sequence = sequence .. "1"
         print(sequence)
         if #sequence == sequency_length then
@@ -85,6 +101,7 @@ function conectado(client)
     function (level,timestamp)
         if timestamp - last < delay then return end
         last = timestamp
+        beep(buzzerPin, 200, 100)
         sequence = sequence .. "2"
         print(sequence)
         if #sequence == sequency_length then
@@ -97,6 +114,7 @@ function conectado(client)
     function (level,timestamp)
         if timestamp - last < delay then return end
         last = timestamp
+        beep(buzzerPin, 300, 100)
         sequence = sequence .. "3"
         print(sequence)
         if #sequence == sequency_length then
@@ -109,6 +127,7 @@ function conectado(client)
     function (level,timestamp)
         if timestamp - last < delay then return end
         last = timestamp
+        beep(buzzerPin, 400, 100)
         sequence = sequence .. "4"
         print(sequence)
         if #sequence == sequency_length then
