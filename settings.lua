@@ -24,7 +24,7 @@ settings = {
     
     love = {
       id = "jogo_da_imitacao_1",
-      node_queue = "love_jogo_da_imitacao_1",
+      node_queue = {"love_jogo_da_imitacao_1"},
     }
   },
   
@@ -41,7 +41,7 @@ settings = {
     
     love = {
       id = "jogo_da_imitacao_2",
-      node_queue = "love_jogo_da_imitacao_2",
+      node_queue = {"love_jogo_da_imitacao_2"},
 
     }
   }

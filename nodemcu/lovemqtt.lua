@@ -36,7 +36,7 @@ function check_sequence(button)
        updated_button = button
        while true do 
             if #sequence == 0 or sequence[position] == updated_button then
-                position += 1
+                position = position + 1
                 if position == #sequence+2 then
                    sequence = sequence .. updated_button --incrementa sequencia
                    updated_button = coroutine.yield(3) --acabou sequencia
@@ -76,6 +76,7 @@ end
 function nodeSubscription(c)
   local msgsrec = 0
   function novamsg(c, t, m)
+    if t ~= node_settings.subscribe then return end
     print ("mensagem node ".. msgsrec .. ", topico: ".. t .. ", dados: " .. m)
 
     if m == '0' then 
@@ -98,8 +99,10 @@ function conectado(client)
   co = coroutine.create(check_sequence)
 
   function button_pressed(button)
+    print("pressed "..button)
     beep(buzzerPin, tones[tonumber(button)], 100)
-        status = coroutine.resume(co,button)
+        _, status = coroutine.resume(co,button)
+        print("current status = "..status)
         if status == 1 then 
             publish_love(client,'h'..button) -- acertou botao sequencia
         elseif status == 2 then

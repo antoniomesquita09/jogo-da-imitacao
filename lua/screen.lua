@@ -26,7 +26,12 @@ function createScreen(width, height)
 
     -- adiciona sequência de botões a ser desenhada
     -- botões ficam desenhados por 1 segundo, com intervalos de 0.5 segundos
-    draw_sequence = function(self, button_sequence)
+    draw_sequence = function(self, sequence_string)
+      -- converte string sequência para lista
+      local button_sequence = {}
+      for i = 1, #sequence_string do
+          button_sequence[i] = sequence_string:sub(i, i)
+      end
       for i,btn in ipairs(button_sequence) do
         button_dict = {
           drawcode=btn,
@@ -64,10 +69,10 @@ function createScreen(width, height)
         button_to_draw = self.drawing_queue[1]
         love.graphics.setColor(button_to_draw.r,button_to_draw.g,button_to_draw.b)
 
-        if (button_to_draw.drawcode == 1) then love.graphics.rectangle("fill", 0, 0, width/2, height/2) end
-        if (button_to_draw.drawcode == 2) then love.graphics.rectangle("fill", width/2, 0, width/2, height/2) end
-        if (button_to_draw.drawcode == 3) then love.graphics.rectangle("fill", 0, height/2, width/2, height/2) end
-        if (button_to_draw.drawcode == 4) then love.graphics.rectangle("fill", width/2, height/2, width/2, height/2) end
+        if (button_to_draw.drawcode == '1') then love.graphics.rectangle("fill", 0, 0, width/2, height/2) end
+        if (button_to_draw.drawcode == '2') then love.graphics.rectangle("fill", width/2, 0, width/2, height/2) end
+        if (button_to_draw.drawcode == '3') then love.graphics.rectangle("fill", 0, height/2, width/2, height/2) end
+        if (button_to_draw.drawcode == '4') then love.graphics.rectangle("fill", width/2, height/2, width/2, height/2) end
       end
 
       -- contornos

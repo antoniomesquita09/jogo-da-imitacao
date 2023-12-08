@@ -30,22 +30,34 @@ end
 -- recebe mensagens mqtt
 function mqttcb(topic, message)
   print("MENSAGEM RECEBIDA: "..topic)
-  caracter = message[1]
+  print("mensagem: "..message)
+  
+  caracter = string.sub(message, 1, 1)
+  print("character: "..caracter)
+  
   if caracter == 's' then
     sequence = string.sub(message, 2,#message)
+    print("printing sequence "..sequence)
     screen:draw_sequence(sequence)
     
   elseif caracter == 'h' then
     button = string.sub(message, 2,#message)
+    print("printing hit "..button)
     screen:button_press(button,0,1,0)
+    
   elseif caracter == 'e' then
     button = string.sub(message, 2,#message)
+    print("printing miss "..button)
     screen:button_press(button,1,0,0)
+    
   elseif caracter == 'v' then
     print("vitoria")
+    
   elseif caracter == 'f' then
     button = string.sub(message, 2,#message)
+    print("printing end sequence "..button)
     screen:button_press(button,0.9,0.9,0.9)
+    
   end
   
 end
