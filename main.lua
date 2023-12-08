@@ -3,9 +3,6 @@ local settings = require("settings")
 local json = require("json/json")
 local player_settings = settings[settings.player].love
 
--- controla de quem é a vez
-local turn = settings[settings.player].starting_turn
-
 function love.load ()
   -- (DEBUG) activate print
   io.stdout:setvbuf("no")
@@ -27,64 +24,30 @@ function love.load ()
   -- conexão mqtt
   mqtt_client = mqtt.client.create(settings.internet.server, settings.internet.port, mqttcb)
   mqtt_client:connect(player_settings.id)
-  mqtt_client:subscribe(player_settings.subscribe)
-end
-
--- função para mandar jogada para computador oponente
-function faz_jogada(msg)
-  print("mandando jogada")
-  mqtt_client:publish(player_settings.attack_queue,msg,0,0, 
-            function(client) print("mandou jogada") end)
-end
-
--- função para mandar resposta de jogada para computador oponente
-function manda_resposta(msg)
-  print("mandando resposta da jogada")
-  mqtt_client:publish(player_settings.response_queue,msg,0,0, 
-            function(client) print("mandou resposta da jogada") end)
-end
-
--- quando recebe jogada inimiga
-function opponent_play(message)
-  print("queue response da play")
-end
-
--- processa a resposta de uma play, se acertou ou não
-function check_play(message)
-  print("queue response check play message")
-  print(message)
-end
-
-
-function nodemcu_keyboard(node_message)
-  print("sequence received from nodemcu " .. node_message)
-
-  local sequence = {}
-  node_message:gsub(".",function(character) table.insert(sequence, tonumber(character)) end)
-
-  screen:draw_sequence(sequence)
-
-  screen:check_sequence(sequence)
-
-  manda_resposta("SUCCESS")
+  mqtt_client:subscribe(player_settings.node_queue)
 end
 
 -- recebe mensagens mqtt
 function mqttcb(topic, message)
   print("MENSAGEM RECEBIDA: "..topic)
-  
-  -- mensagem é na fila de jogada inimiga
-  if (topic == player_settings.subscribe[1]) then
-    opponent_play(message)
-  
-  -- mensagem é na fila do nodemcu = é entrada de teclado
-  elseif (topic == player_settings.subscribe[2]) then
-    nodemcu_keyboard(message)
+  caracter = message[1]
+  if caracter == 's' then
+    sequence = string.sub(message, 2,#message)
+    screen:draw_sequence(sequence)
     
-  -- mensagem é na fila de resposta da jogada
-  elseif (topic == player_settings.subscribe[3]) then
-    check_play(message)
+  elseif caracter == 'h' then
+    button = string.sub(message, 2,#message)
+    screen:button_press(button,0,1,0)
+  elseif caracter == 'e' then
+    button = string.sub(message, 2,#message)
+    screen:button_press(button,1,0,0)
+  elseif caracter == 'v' then
+    print("vitoria")
+  elseif caracter == 'f' then
+    button = string.sub(message, 2,#message)
+    screen:button_press(button,0.9,0.9,0.9)
   end
+  
 end
 
 function love.update(dt)
