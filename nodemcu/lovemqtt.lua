@@ -1,7 +1,7 @@
 -- settings
 local settings = require("settings")
-local node_settings = settings[settings.player].node
-local love_settings = settings[settings.player].love
+node_settings = settings[settings.player].node
+love_settings = settings[settings.player].love
 
 local chave = 0
 local delay = 200000
@@ -35,13 +35,13 @@ function check_sequence(button)
        position = 1
        updated_button = button
        while true do 
-            if #sequence == 0 or sequence[position] == updated_button then
+            if sequence:sub(position,position) == updated_button then
                 position = position + 1
-                if position == #sequence+2 then
-                   sequence = sequence .. updated_button --incrementa sequencia
-                   updated_button = coroutine.yield(3) --acabou sequencia
-                end
                 updated_button = coroutine.yield(1) --acertou botao da sequencia
+            elseif position == #sequence+1 then
+                position = 1
+                sequence = sequence .. updated_button --incrementa sequencia
+                updated_button = coroutine.yield(3) --acabou sequencia
             else 
                 position = 1
                 updated_button = coroutine.yield(2) -- errou botao da sequencia
@@ -64,16 +64,20 @@ function beep(pin, tone, duration)
 end
 
 function publish_love(c,msg)
+  print("mandando pro love")
+  print(msg)
   c:publish(node_settings.publish_love,msg,0,0, 
             function(client) print("mandou pro love! "..msg) end)
 end
 
 function publish_node(c,msg)
+  print("mandando pro node")
+  print(msg)
   c:publish(node_settings.publish_node,msg,0,0, 
             function(client) print("mandou pro node! "..msg) end)
 end
 
-function nodeSubscription(c)
+function nodeSubscription(client)
   local msgsrec = 0
   function novamsg(c, t, m)
     if t ~= node_settings.subscribe then return end
@@ -90,7 +94,7 @@ function nodeSubscription(c)
 
     msgsrec = msgsrec + 1
   end
-  c:on("message", novamsg)
+  client:on("message", novamsg)
 end
 
 function conectado(client)
