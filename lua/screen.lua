@@ -10,14 +10,15 @@ function createScreen(width, height)
       -- um botão é iluminado de cada vez
       drawing_queue={},
 
-      correct_sequence={},
-
       -- botão do node apertado (ilumina quadrado apertado)
       -- botão = número de 1 a 4 (equivalente a botão apertado)
       -- botões ficam desenhados por 1 segundo
-      button_press = function(self, btn)
-        button_dict = {
+      button_press = function(self, btn, red, green, blue)
+        local button_dict = {
           drawcode=btn,
+          r=red,
+          g=green,
+          b=blue,
           time=1
         }
         table.insert(self.drawing_queue,button_dict)
@@ -27,33 +28,23 @@ function createScreen(width, height)
       -- botões ficam desenhados por 1 segundo, com intervalos de 0.5 segundos
       draw_sequence = function(self, button_sequence)
         for i,btn in ipairs(button_sequence) do
-            button_dict = {
-              drawcode=btn,
-              time=1
-            }
-            rest_dict = {
-              drawcode=0,
-              time=0.5
-            }
-            table.insert(self.drawing_queue,button_dict)
-            table.insert(self.drawing_queue,rest_dict)
+          button_dict = {
+            drawcode=btn,
+            r=0.9,
+            g=0.9,
+            b=0.9,
+            time=1
+          }
+          rest_dict = {
+            drawcode=0,
+            r=0,
+            g=0,
+            b=0,
+            time=0.5
+          }
+          table.insert(self.drawing_queue,button_dict)
+          table.insert(self.drawing_queue,rest_dict)
         end
-      end,
-
-      check_sequence = function(self, sequence)
-        if #self.correct_sequence == 0 then
-          table.insert(self.correct_sequence, sequence[1])
-          return
-        end
-
-        next_btn = table.remove(sequence, #self.correct_sequence + 1)
-        for i,attempt in ipairs(sequence) do
-          if attempt ~= self.correct_sequence[i] then
-            print("[ERROR] Received: " .. attempt .. " on index " .. i .. " and expected " .. self.correct_sequence[i])
-          end
-        end
-        
-        table.insert(self.correct_sequence, next_btn)
       end,
 
       update = function(self, dt)
@@ -70,8 +61,8 @@ function createScreen(width, height)
       draw = function(self)
         -- animação botão
         if (#self.drawing_queue > 0) then
-          love.graphics.setColor(0.9,0.9,0.9)
           button_to_draw = self.drawing_queue[1]
+          love.graphics.setColor(button_to_draw.r,button_to_draw.g,button_to_draw.b)
 
           if (button_to_draw.drawcode == 1) then love.graphics.rectangle("fill", 0, 0, width/2, height/2) end
           if (button_to_draw.drawcode == 2) then love.graphics.rectangle("fill", width/2, 0, width/2, height/2) end
