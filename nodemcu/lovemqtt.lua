@@ -10,11 +10,46 @@ local sw1 = 3
 local sw2 = 4
 local sw3 = 5
 local sw4 = 8
-local tones = {100,200,300,400}
+
+turn = settings[settings.player].starting_turn
+
+tones = {100,200,300,400}
 
 buzzerPin = 7
 gpio.mode(buzzerPin, gpio.OUTPUT)
 
+gpio.mode(sw1,gpio.INT,gpio.PULLUP)
+gpio.mode(sw2,gpio.INT,gpio.PULLUP)
+gpio.mode(sw3,gpio.INT,gpio.PULLUP)
+gpio.mode(sw4,gpio.INT,gpio.PULLUP)
+
+local meuid = node_settings.id
+local m = mqtt.Client(meuid, 120)
+
+play_success = 'SUCCESS'
+play_failure = 'FAILURE'
+sequence = ""
+
+
+function check_sequence(button)
+       position = 1
+       updated_button = button
+       while true do 
+            if #sequence == 0 or sequence[position] == updated_button then
+                position += 1
+                if position == #sequence+2 then
+                   sequence = sequence .. updated_button --incrementa sequencia
+                   updated_button = coroutine.yield(3) --acabou sequencia
+                end
+                updated_button = coroutine.yield(1) --acertou botao da sequencia
+            else 
+                position = 1
+                updated_button = coroutine.yield(2) -- errou botao da sequencia
+            end
+            
+       end
+end
+      
 function beep(pin, tone, duration)
     local freq = tone
     print ("Frequency:" .. freq)
@@ -28,22 +63,14 @@ function beep(pin, tone, duration)
     tmr.delay(20000)
 end
 
-gpio.mode(sw1,gpio.INT,gpio.PULLUP)
-gpio.mode(sw2,gpio.INT,gpio.PULLUP)
-gpio.mode(sw3,gpio.INT,gpio.PULLUP)
-gpio.mode(sw4,gpio.INT,gpio.PULLUP)
+function publish_love(c,msg)
+  c:publish(node_settings.publish_love,msg,0,0, 
+            function(client) print("mandou pro love! "..msg) end)
+end
 
-local meuid = node_settings.id
-local m = mqtt.Client(meuid, 120)
-
-sequency_length = 1
-play_success = 'SUCCESS'
-play_failure = 'FAILURE'
-sequence = ""
-
-function publish(c,chave)
-  c:publish(node_settings.publish,chave,0,0, 
-            function(client) print("mandou! "..chave) end)
+function publish_node(c,msg)
+  c:publish(node_settings.publish_node,msg,0,0, 
+            function(client) print("mandou pro node! "..msg) end)
 end
 
 function nodeSubscription(c)
@@ -51,28 +78,13 @@ function nodeSubscription(c)
   function novamsg(c, t, m)
     print ("mensagem node ".. msgsrec .. ", topico: ".. t .. ", dados: " .. m)
 
-    -- for _, value in pairs(node_response.sequence) do
-    --   frequency = frequency_mapper[value]
-    --   -- disparar buzzer do nodemcu com a frequency 
-    -- end
-
-    msgsrec = msgsrec + 1
-  end
-  c:on("message", novamsg)
-end
-
-function responseSubscription(c)
-  local msgsrec = 0
-  function novamsg(c, t, m)
-    print ("mensagem response ".. msgsrec .. ", topico: ".. t .. ", dados: " .. m)
-
-    if m == play_success then
-      -- turn on green light
-      print()
-    elseif m == play_failure then
-      -- turn on red light
+    if m == '0' then 
+        turn = 3 --venceu
+        publish_love(client, 'v')
     else
-      print("UNKNOWN response status")
+        sequence = m 
+        publish_love(client, 's'..sequence)
+        turn = 1 --nossa vez
     end
 
     msgsrec = msgsrec + 1
@@ -82,59 +94,59 @@ end
 
 function conectado(client)
   client:subscribe(node_settings.subscribe, 0, nodeSubscription)
-  client:subscribe(love_settings.response_queue, 0, responseSubscription)
+ 
+  co = coroutine.create(check_sequence)
 
+  function button_pressed(button)
+    beep(buzzerPin, tones[tonumber(button)], 100)
+        status = coroutine.resume(co,button)
+        if status == 1 then 
+            publish_love(client,'h'..button) -- acertou botao sequencia
+        elseif status == 2 then
+            publish_love(client,'e'..button) -- errou botao da sequencia
+            publish_node(client,'0') -- errou botao da sequencia
+            turn = 4 -- perdeu
+        else
+            publish_love(client,'f'..button) -- acabou sequencia 
+            publish_node(client,sequence) --manda pro outro node a seq
+            turn = 2 --passa a vez
+        end
+  end
+  
   gpio.trig(sw1, "down", 
     function (level,timestamp)
+        if turn ~= 1 then return end
         if timestamp - last < delay then return end
         last = timestamp
-        beep(buzzerPin, 100, 100)
-        sequence = sequence .. "1"
-        print(sequence)
-        if #sequence == sequency_length then
-          publish(client,sequence)
-          sequency_length = #sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
-          sequence = ""
-        end
+
+        button_pressed('1')
     end)
+    
   gpio.trig(sw2, "down", 
     function (level,timestamp)
+        if turn ~= 1 then return end
         if timestamp - last < delay then return end
         last = timestamp
-        beep(buzzerPin, 200, 100)
-        sequence = sequence .. "2"
-        print(sequence)
-        if #sequence == sequency_length then
-          publish(client,sequence)
-          sequency_length = #sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
-          sequence = ""
-        end
+
+        button_pressed('2')
     end)
+    
   gpio.trig(sw3, "down", 
     function (level,timestamp)
+        if turn ~= 1 then return end
         if timestamp - last < delay then return end
         last = timestamp
-        beep(buzzerPin, 300, 100)
-        sequence = sequence .. "3"
-        print(sequence)
-        if #sequence == sequency_length then
-          publish(client,sequence)
-          sequency_length = #sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
-          sequence = ""
-        end
+
+        button_pressed('3')
     end)
+    
   gpio.trig(sw4, "down", 
     function (level,timestamp)
+        if turn ~= 1 then return end
         if timestamp - last < delay then return end
         last = timestamp
-        beep(buzzerPin, 400, 100)
-        sequence = sequence .. "4"
-        print(sequence)
-        if #sequence == sequency_length then
-          publish(client,sequence)
-          sequency_length = #sequence + 1 -- incrementa o tamanho da play com o tamanho atual + 1 da próxima jogada
-          sequence = ""
-        end
+
+        button_pressed('4')
     end)
 end 
 
