@@ -5,8 +5,8 @@ settings = {
   
   -- internet connection settings
   internet = {
-    id = "Felipe e Katia",
-    password = "fk123456",
+    id = "wifi",
+    password = "senha",
     server="139.82.100.100",
     port=7981
   },
