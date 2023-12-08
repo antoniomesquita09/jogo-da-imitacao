@@ -69,10 +69,10 @@ function buzz_sequence(sequence_string)
     for i = 1, #sequence_string do
         button_sequence[i] = tonumber(sequence_string:sub(i, i))
     end
-
+    
     for i,btn in ipairs(button_sequence) do
-        beep(buzzerPin, tones[tonumber(button)], 1000)
-        tmr.delay(500 * 1000)
+        beep(buzzerPin, tones[btn], 200)
+        tmr.delay(100 * 1000)
     end
 end
 
@@ -101,8 +101,8 @@ function nodeSubscription(client)
         publish_love(client, 'v')
     else
         sequence = m
-        publish_love(client, 's'..sequence)
         buzz_sequence(sequence)
+        publish_love(client, 's'..sequence)
         turn = 1 --nossa vez
     end
 
