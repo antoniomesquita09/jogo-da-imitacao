@@ -13,7 +13,8 @@ local sw4 = 8
 
 turn = settings[settings.player].starting_turn
 
-tones = {100,200,300,400}
+-- 1, 2, 3, 4 = A, C, E, G 
+tones = {220,262,330,392}
 
 buzzerPin = 7
 gpio.mode(buzzerPin, gpio.OUTPUT)
@@ -63,6 +64,18 @@ function beep(pin, tone, duration)
     tmr.delay(20000)
 end
 
+function buzz_sequence(sequence_string)
+    button_sequence = {}
+    for i = 1, #sequence_string do
+        button_sequence[i] = tonumber(sequence_string:sub(i, i))
+    end
+
+    for i,btn in ipairs(button_sequence) do
+        beep(buzzerPin, tones[tonumber(button)], 1000)
+        tmr.delay(500 * 1000)
+    end
+end
+
 function publish_love(c,msg)
   print("mandando pro love")
   print(msg)
@@ -87,8 +100,9 @@ function nodeSubscription(client)
         turn = 3 --venceu
         publish_love(client, 'v')
     else
-        sequence = m 
+        sequence = m
         publish_love(client, 's'..sequence)
+        buzz_sequence(sequence)
         turn = 1 --nossa vez
     end
 

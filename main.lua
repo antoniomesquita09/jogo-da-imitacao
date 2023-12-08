@@ -11,7 +11,7 @@ function love.load ()
   require('lua/screen')
 
   -- screen startup
-  screen_size = 1000
+  screen_size = 500
   love.window.setMode(screen_size,screen_size)
   love.window.setTitle("Jogo da Imitação")
   love.graphics.setBackgroundColor(0.5,0.5,0.5)
@@ -32,21 +32,21 @@ function mqttcb(topic, message)
   print("MENSAGEM RECEBIDA: "..topic)
   print("mensagem: "..message)
   
-  caracter = string.sub(message, 1, 1)
+  caracter = message:sub(1, 1)
   print("character: "..caracter)
   
   if caracter == 's' then
-    sequence = string.sub(message, 2,#message)
+    sequence = message:sub(2,#message)
     print("printing sequence "..sequence)
     screen:draw_sequence(sequence)
     
   elseif caracter == 'h' then
-    button = string.sub(message, 2,#message)
+    button = message:sub(2,#message)
     print("printing hit "..button)
     screen:button_press(button,0,1,0)
     
   elseif caracter == 'e' then
-    button = string.sub(message, 2,#message)
+    button = message:sub(2,#message)
     print("printing miss "..button)
     screen:button_press(button,1,0,0)
     
@@ -54,7 +54,7 @@ function mqttcb(topic, message)
     print("vitoria")
     
   elseif caracter == 'f' then
-    button = string.sub(message, 2,#message)
+    button = message:sub(2,#message)
     print("printing end sequence "..button)
     screen:button_press(button,0.9,0.9,0.9)
     
