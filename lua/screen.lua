@@ -26,7 +26,7 @@ function createScreen(width, height)
 				r=red,
 				g=green,
 				b=blue,
-				time=1
+				time=0.5
 			}
 			table.insert(self.drawing_queue,button_dict)
 		end,
@@ -101,7 +101,7 @@ function createScreen(width, height)
 			end
 
 			-- contornos
-			love.graphics.setColor(0.2,0.2,0.2)
+			love.graphics.setColor(0.5,0.5,0.5)
 			love.graphics.rectangle("line", 0, 0, width/2, height/2)
 			love.graphics.rectangle("line", width/2, 0, width/2, height/2)
 			love.graphics.rectangle("line", 0, height/2, width/2, height/2)

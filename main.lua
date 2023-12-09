@@ -1,6 +1,5 @@
 local mqtt = require("mqtt_library")
 local settings = require("settings")
-local json = require("json/json")
 local player_settings = settings[settings.player].love
 
 function love.load ()
@@ -9,14 +8,19 @@ function love.load ()
 	
 	-- requiring files
 	require('lua/screen')
+	require('lua/statusscreen')
 
 	-- screen startup
 	screen_size = 600
-	love.window.setMode(screen_size,screen_size+150)
+	status_size = 150
+	love.window.setMode(screen_size,screen_size+status_size)
 	love.window.setTitle("Jogo da Imitação")
-	love.graphics.setBackgroundColor(0.5,0.5,0.5)
+	love.graphics.setBackgroundColor(0.1,0.1,0.1)
+
+	local starting_turn = settings[settings.player].starting_turn
 
 	screen = createScreen(screen_size, screen_size)
+	status_screen = createStatusScreen(0, screen_size, screen_size, status_size, starting_turn)
 	
 	-- sons
 	local src1 = love.audio.newSource("sounds/220.ogg","static")
@@ -26,8 +30,12 @@ function love.load ()
 	
 	screen:add_sounds(src1, src2, src3, src4)
 	
-	-- exemplo tocando sequencia
-	-- screen:draw_sequence("13242")
+	--[[
+	-- exemplos tocando sequencia, acerto, erro
+	screen:draw_sequence("13242")
+	screen:button_press('1',0,1,0)
+	screen:button_press('4',1,0,0)
+	]]--
 
 	-- conexão mqtt
 	mqtt_client = mqtt.client.create(settings.internet.server, settings.internet.port, mqttcb)
@@ -47,6 +55,7 @@ function mqttcb(topic, message)
 		local sequence = message:sub(2,#message)
 		print("printing sequence "..sequence)
 		screen:draw_sequence(sequence)
+		status_screen:set_status(1)
 		
 	elseif character == 'h' then
 		local button = message:sub(2,#message)
@@ -57,15 +66,17 @@ function mqttcb(topic, message)
 		local button = message:sub(2,#message)
 		print("printing miss "..button)
 		screen:button_press(button,1,0,0)
+		status_screen:set_status(4)
 		
 	elseif character == 'v' then
 		print("vitoria")
+		status_screen:set_status(3)
 		
 	elseif character == 'f' then
 		local button = message:sub(2,#message)
 		print("printing end sequence "..button)
 		screen:button_press(button,0.9,0.9,0.9)
-		
+		status_screen:set_status(2)
 	end
 	
 end
@@ -79,6 +90,7 @@ end
 function love.draw()
 	-- desenhar tela
 	screen:draw()
+	status_screen:draw()
 end
 
 function love.quit()
