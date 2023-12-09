@@ -11,15 +11,23 @@ function love.load ()
 	require('lua/screen')
 
 	-- screen startup
-	screen_size = 500
-	love.window.setMode(screen_size,screen_size)
+	screen_size = 600
+	love.window.setMode(screen_size,screen_size+150)
 	love.window.setTitle("Jogo da Imitação")
 	love.graphics.setBackgroundColor(0.5,0.5,0.5)
 
 	screen = createScreen(screen_size, screen_size)
 	
-	-- exemplo de sequência sendo desenhada
-	-- screen:draw_sequence({1,3,2,2,4,1})
+	-- sons
+	local src1 = love.audio.newSource("sounds/220.ogg","static")
+	local src2 = love.audio.newSource("sounds/262.ogg","static")
+	local src3 = love.audio.newSource("sounds/330.ogg","static")
+	local src4 = love.audio.newSource("sounds/392.ogg","static")
+	
+	screen:add_sounds(src1, src2, src3, src4)
+	
+	-- exemplo tocando sequencia
+	-- screen:draw_sequence("13242")
 
 	-- conexão mqtt
 	mqtt_client = mqtt.client.create(settings.internet.server, settings.internet.port, mqttcb)
